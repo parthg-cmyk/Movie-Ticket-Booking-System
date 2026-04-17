@@ -76,6 +76,8 @@ class TicketBooking(Document):
     def validate_show_status(self):
         show_status = frappe.db.get_value("Show", self.show, "show_status")
 
+        frappe.msgprint(f"DEBUG: Show Status = {show_status}")  # 👈 TEMP
+
         if not (show_status == "Scheduled" or show_status == "Now Playing"):
             frappe.throw(f"Cannot book tickets for a {show_status.lower()} show")
 

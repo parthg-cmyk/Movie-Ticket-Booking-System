@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from datetime import datetime, timedelta
-from frappe.utils import getdate, nowdate, get_time
+from frappe.utils import getdate, nowdate, get_time,now_datetime,get_datetime
 
 
 class Show(Document):
@@ -29,7 +29,6 @@ class Show(Document):
         total_seats: DF.Int
     # end: auto-generated types
 
-
     def validate(self):
         self.set_end_time()
         self.validate_show_date()
@@ -37,7 +36,29 @@ class Show(Document):
         self.validate_show_conflicts()
 
     def on_update(self):
-        self.handle_show_cancellation()
+        if self.has_value_changed("show_status"):
+            self.handle_show_cancellation()
+        
+    def before_save(self):
+      self.update_show_status()
+
+    def update_show_status(self):
+        if self.show_status == "Cancelled":
+            return  # don't override manual cancel
+
+        if not self.show_date or not self.start_time or not self.end_time:
+            return
+
+        now = now_datetime()
+        show_start = get_datetime(f"{self.show_date} {self.start_time}")
+        show_end = get_datetime(f"{self.show_date} {self.end_time}")
+
+        if now < show_start:
+            self.show_status = "Scheduled"
+        elif show_start <= now <= show_end:
+            self.show_status = "Now Playing"
+        else:
+            self.show_status = "Completed"
 
     def set_end_time(self):
         if self.movie and self.start_time:
@@ -114,6 +135,8 @@ class Show(Document):
 
         for b in bookings:
             booking = frappe.get_doc("Ticket Booking", b.name)
+
+            booking.flags.ignore_validate = True  # ✅ ADD THIS
 
             booking.booking_status = "Cancelled"
             booking.cancellation_reason = "Show Cancelled"

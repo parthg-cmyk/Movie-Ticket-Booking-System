@@ -56,7 +56,7 @@ role_home_page = {"Customer": "my-bookings"}
 
 scheduler_events = {
     "cron": {"*/5 * * * *": ["movie_tickets.tasks.expire_unpaid_bookings"]},
-    "cron": {"0 15 * * *": ["movie_tickets.tasks.send_daily_revenue_digest"]},
+    "cron": {"15 16 * * *": ["movie_tickets.tasks.send_daily_revenue_digest"]},
     "daily": ["movie_tickets.tasks.update_movie_status"],
     "hourly": ["movie_tickets.tasks.update_show_status"],
 }

@@ -1,6 +1,3 @@
-[pre_model_sync]
-# Patches added in this section will be executed before doctypes are migrated
-# Read docs to understand patches: https://docs.frappe.io/framework/user/en/database-migrations
-
-[post_model_sync]
-# Patches added in this section will be executed after doctypes are migrated
+movie_tickets.patches.recalculate_show_seat_counts
+movie_tickets.patches.set_movie_slugs
+movie_tickets.patches.populate_booking_source

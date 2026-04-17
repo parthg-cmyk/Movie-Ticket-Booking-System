@@ -1,0 +1,20 @@
+{
+ "cards": [],
+ "charts": [
+  {
+   "width": "Half"
+  }
+ ],
+ "creation": "2026-04-16 17:40:13.806633",
+ "dashboard_name": "Cinema Dashboard",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2026-04-16 17:41:15.769309",
+ "modified_by": "Administrator",
+ "module": "Movie Tickets",
+ "name": "Cinema Dashboard",
+ "owner": "Administrator"
+}

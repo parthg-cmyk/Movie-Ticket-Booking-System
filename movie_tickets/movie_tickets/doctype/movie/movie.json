@@ -114,7 +114,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-13 16:22:33.754160",
+ "modified": "2026-04-15 13:25:24.990259",
  "modified_by": "Administrator",
  "module": "Movie Tickets",
  "name": "Movie",
@@ -138,5 +138,6 @@
  "rows_threshold_for_grid_search": 20,
  "sort_field": "creation",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1
 }

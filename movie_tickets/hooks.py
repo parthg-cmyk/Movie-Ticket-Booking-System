@@ -25,8 +25,8 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/movie_tickets/css/movie_tickets.css"
-# app_include_js = "/assets/movie_tickets/js/movie_tickets.js"
+app_include_css = "/assets/movie_tickets/css/cinema.css"
+app_include_js = "/assets/movie_tickets/js/cinema.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/movie_tickets/css/movie_tickets.css"
@@ -49,20 +49,28 @@ app_license = "mit"
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
 fixtures = [
-    {
-        "dt": "Custom Field",
-        "filters": [
-            ["module", "=", "Movie Tickets"]
-        ]
-    },
-    {
-        "dt": "Property Setter",
-        "filters": [
-            ["doc_type", "=", "Ticket Booking"]
-        ]
-    }
+    {"dt": "Custom Field", "filters": [["module", "=", "Movie Tickets"]]},
+    {"dt": "Property Setter", "filters": [["doc_type", "=", "Ticket Booking"]]},
 ]
+role_home_page = {"Customer": "my-bookings"}
 
+scheduler_events = {
+    "cron": {"*/5 * * * *": ["movie_tickets.tasks.expire_unpaid_bookings"]},
+    "cron": {"0 15 * * *": ["movie_tickets.tasks.send_daily_revenue_digest"]},
+    "daily": ["movie_tickets.tasks.update_movie_status"],
+    "hourly": ["movie_tickets.tasks.update_show_status"],
+}
+
+doc_events = {
+    "Ticket Booking": {
+        "after_insert": "movie_tickets.events.ticket_booking.after_insert_booking",
+        "on_submit": "movie_tickets.events.ticket_booking.on_submit_booking",
+    },
+    "Movie": {"before_save": "movie_tickets.events.movie.before_save_movie"},
+}
+override_whitelisted_methods = {
+    "frappe.client.get_count": "movie_tickets.events.client.get_count"
+}
 # Svg Icons
 # ------------------
 # include app icons in desk
@@ -273,4 +281,3 @@ require_type_annotated_api_methods = True
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-

@@ -1,0 +1,224 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+
+<!-- 🌐 Same Font as Movie Shows -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: #f5f7fb;
+    }
+
+    /* 🌌 Container */
+    .movie-container {
+        padding: 40px;
+        max-width: 1200px;
+        margin: auto;
+    }
+
+    /* 🎬 Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    /* 🎛 Filter Bar */
+    .filter-bar select {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background: white;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    /* 🎬 Grid */
+    .movie-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 22px;
+    }
+
+    /* 🎟 Card */
+    .movie-card {
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        transition: 0.3s;
+        text-decoration: none;
+        color: black;
+    }
+
+    .movie-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+        
+    }
+
+    /* 🖼 Poster */
+    .movie-poster {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+    }
+
+    /* 📄 Info */
+    .movie-info {
+        padding: 14px;
+        text-decoration: none;
+
+    }
+
+    /* 🎬 Title */
+    .movie-title {
+        font-weight: 600;
+        font-size: 16px;
+        text-decoration: none;
+
+    }
+
+    /* 📊 Meta */
+    .movie-meta {
+        font-size: 13px;
+        color: #777;
+        margin-top: 4px;
+        text-decoration: none;
+
+    }
+
+    /* ⭐ Rating Badge */
+    .badge-rating {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        color: white;
+    }
+
+    /* 🎬 Hover Overlay */
+    .movie-card:hover .overlay {
+        opacity: 1;
+    }
+
+    /* ▶ Overlay Button */
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: 0.3s;
+    }
+
+    .overlay-btn {
+        background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    /* ❌ Empty */
+    .empty-state {
+        text-align: center;
+        margin-top: 60px;
+        color: #888;
+    }
+</style>
+
+<div class="movie-container">
+
+    <!-- 🎬 Header + Filters -->
+    <div class="page-header">
+
+        <div class="page-title">🎬 Now Showing</div>
+
+        <form method="get" class="filter-bar">
+
+            <select name="genre" onchange="this.form.submit()">
+                <option value="">Genre</option>
+                {% for g in genres %}
+                <option value="{{ g }}" {% if frappe.form_dict.genre==g %}selected{% endif %}>
+                    {{ g }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <select name="language" onchange="this.form.submit()">
+                <option value="">Language</option>
+                {% for l in languages %}
+                <option value="{{ l }}" {% if frappe.form_dict.language==l %}selected{% endif %}>
+                    {{ l }}
+                </option>
+                {% endfor %}
+            </select>
+
+        </form>
+
+    </div>
+
+    <!-- 🎬 Movie Grid -->
+    <div class="movie-grid">
+
+        {% if movies and movies|length > 0 %}
+
+        {% for movie in movies %}
+        <a href="/movieshows?movie={{ movie.name }}" class="movie-card" style="position:relative;">
+
+            <!-- Overlay -->
+            <div class="overlay">
+                <div class="overlay-btn">View Shows</div>
+            </div>
+
+            <img src="{{ movie.poster or '/assets/frappe/images/ui/avatar.png' }}" class="movie-poster" loading="lazy">
+
+            <div class="movie-info">
+                <div class="movie-title">{{ movie.title }}</div>
+
+                <div class="movie-meta">
+                    {{ movie.language }} • {{ movie.genre }}
+                </div>
+
+                <div class="movie-meta">
+                    ⏱ {{ movie.duration_minutes }} min
+                </div>
+
+                <div class="badge-rating">
+                    {{ movie.rating }}
+                </div>
+            </div>
+
+        </a>
+        {% endfor %}
+
+        {% else %}
+
+        <div class="empty-state">
+            <h4>No movies currently showing 🎬</h4>
+            <p>Please check back later</p>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

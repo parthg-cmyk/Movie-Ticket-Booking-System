@@ -16,7 +16,9 @@ class TicketBooking(Document):
 
     if TYPE_CHECKING:
         from frappe.types import DF
-        from movie_tickets.movie_tickets.doctype.booked_seat.booked_seat import BookedSeat
+        from movie_tickets.movie_tickets.doctype.booked_seat.booked_seat import (
+            BookedSeat,
+        )
 
         amended_from: DF.Link | None
         booked_by: DF.Link | None
@@ -49,43 +51,40 @@ class TicketBooking(Document):
         self.calculate_totals()
         self.validate_seat_limits()
 
-    def before_insert(self):
-         self.update_booking_status()
-    
-    def after_insert(self):
-        if self.booking_status == "Confirmed":
-            self.update_show_seats()
-
+    def on_submit(self):
+        self.update_booking_status()
+        self.update_show_seats()
 
     def update_show_seats(self):
         if not self.show or not self.number_of_seats:
             return
 
-        show = frappe.get_doc("Show", self.show)
-
-        show.booked_seats = (show.booked_seats) + self.number_of_seats
-        show.available_seats = (show.available_seats) - self.number_of_seats
-
-        show.save(ignore_permissions=True)
+        frappe.db.sql(
+            """
+                UPDATE `tabShow`
+                SET
+                    booked_seats = COALESCE(booked_seats, 0) + %s,
+                    available_seats = COALESCE(available_seats, 0) - %s
+                WHERE name = %s """,
+            (self.number_of_seats, self.number_of_seats, self.show),
+        )
 
     def update_booking_status(self):
-         self.booking_status = "Confirmed"
-         self.payment_status = "Paid"
-         
+        self.booking_status = "Confirmed"
+        self.payment_status = "Paid"
 
     def validate_show_status(self):
         show_status = frappe.db.get_value("Show", self.show, "show_status")
 
         if not (show_status == "Scheduled" or show_status == "Now Playing"):
-                frappe.throw("Cannot book tickets for a {show_status} show.")
-                
+            frappe.throw(f"Cannot book tickets for a {show_status.lower()} show")
+
     def validate_duplicate_seats(self):
         seats = [d.seat_label for d in self.seats if d.seat_label]
 
         if len(seats) != len(set(seats)):
             frappe.throw("Duplicate seats selected in booking")
 
-  
     def validate_seat_format_and_range(self):
         if not self.screen:
             return
@@ -99,13 +98,11 @@ class TicketBooking(Document):
 
         for d in self.seats:
             if not d.seat_label:
-                    continue
-                     
+                continue
+
             if not pattern.match(d.seat_label):
-                     frappe.throw(
-                    f"Invalid seat format: {d.seat_label}. Use format A-12"
-                )
-                     
+                frappe.throw(f"Invalid seat format: {d.seat_label}. Use format A-12")
+
             row_letter, seat_number = d.seat_label.split("-")
             seat_number = int(seat_number)
 
@@ -113,9 +110,7 @@ class TicketBooking(Document):
             row_index = ord(row_letter) - ord("A") + 1
 
             if row_index < 1 or row_index > max_rows:
-                frappe.throw(
-                    f"Row {row_letter} exceeds screen row limit ({max_rows})"
-                )
+                frappe.throw(f"Row {row_letter} exceeds screen row limit ({max_rows})")
 
             if seat_number < 1 or seat_number > max_cols:
                 frappe.throw(
@@ -131,7 +126,8 @@ class TicketBooking(Document):
         if not selected_seats:
             return
 
-        conflict = frappe.db.sql("""
+        conflict = frappe.db.sql(
+            """
             SELECT bs.seat_label
             FROM `tabBooked Seat` bs
             JOIN `tabTicket Booking` b ON b.name = bs.parent
@@ -139,7 +135,10 @@ class TicketBooking(Document):
               AND b.booking_status IN ('Pending', 'Confirmed')
               AND bs.seat_label IN %s
               AND b.name != %s
-        """, (self.show, tuple(selected_seats), self.name), as_dict=1)
+        """,
+            (self.show, tuple(selected_seats), self.name),
+            as_dict=1,
+        )
 
         if conflict:
             frappe.throw(
@@ -160,32 +159,42 @@ class TicketBooking(Document):
 
         if self.number_of_seats > 10:
             frappe.throw("Maximum 10 seats allowed per booking")
-    
+
     def on_cancel(self):
         self.handle_cancellation()
 
-
     def handle_cancellation(self):
-        # 1. Set booking status
-        self.booking_status = "Cancelled"
+        cancellation_time = now_datetime()
 
-        # 2. Set cancellation time
-        self.cancellation_time = now_datetime()
-
-        # 3. Calculate refund
         self.calculate_refund()
+
+        # Persist values safely
+        self.db_set(
+            {
+                "booking_status": "Cancelled",
+                "cancellation_time": cancellation_time,
+                "refund_amount": self.refund_amount,
+                "payment_status": self.payment_status,
+            }
+        )
 
         # 4. Update show seats
         self.update_show_seats_on_cancel()
 
     def calculate_refund(self):
-        if not self.show or not self.show_date or not self.start_time:
+        if not self.show:
             self.refund_amount = 0
             self.payment_status = "No Refund"
             return
 
-        # Combine show_date + start_time → full datetime
-        show_datetime = get_datetime(f"{self.show_date} {self.start_time}")
+        show = frappe.get_doc("Show", self.show)
+
+        if not show.show_date or not show.start_time:
+            self.refund_amount = 0
+            self.payment_status = "No Refund"
+            return
+
+        show_datetime = get_datetime(f"{show.show_date} {show.start_time}")
         now = now_datetime()
 
         diff = show_datetime - now
@@ -205,15 +214,17 @@ class TicketBooking(Document):
 
         self.refund_amount = refund
 
-
     def update_show_seats_on_cancel(self):
         if not self.show or not self.number_of_seats:
             return
 
-        frappe.db.sql("""
+        frappe.db.sql(
+            """
             UPDATE `tabShow`
             SET
                 booked_seats = COALESCE(booked_seats, 0) - %s,
                 available_seats = COALESCE(available_seats, 0) + %s
             WHERE name = %s
-        """, (self.number_of_seats, self.number_of_seats, self.show))
+        """,
+            (self.number_of_seats, self.number_of_seats, self.show),
+        )

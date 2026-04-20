@@ -5,7 +5,8 @@ def get_context(context):
 
     # 🔒 Restrict guest access
     if frappe.session.user == "Guest":
-        frappe.throw("Please login to view your bookings")
+        frappe.msgprint("Please login to view your bookings")
+        frappe.redirect('/login')
 
     # 🎟 Fetch bookings
     bookings = frappe.get_all(

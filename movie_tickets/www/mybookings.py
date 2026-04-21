@@ -7,6 +7,8 @@ def get_context(context):
     if frappe.session.user == "Guest":
         frappe.msgprint("Please login to view your bookings")
         frappe.redirect('/login')
+    
+    context.user = frappe.session.user
 
     # 🎟 Fetch bookings
     bookings = frappe.get_all(

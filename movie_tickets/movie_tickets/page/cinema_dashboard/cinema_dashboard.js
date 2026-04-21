@@ -1,4 +1,4 @@
-frappe.pages['cinema-dashboard'].on_page_load = function(wrapper) {
+frappe.pages['cinema-dashboard'].on_page_load = function (wrapper) {
 
     let page = frappe.ui.make_app_page({
         parent: wrapper,
@@ -8,6 +8,8 @@ frappe.pages['cinema-dashboard'].on_page_load = function(wrapper) {
 
     // ✅ Use page.body (IMPORTANT FIX)
     let $body = $(page.body);
+    
+    page.set_title("🔥 Live Cinema Dashboard");
 
     // 🎨 CSS (scoped properly)
     $body.append(`
@@ -82,7 +84,7 @@ function load_dashboard(page) {
 
     frappe.call({
         method: "movie_tickets.movie_tickets.page.cinema_dashboard.cinema_dashboard.get_dashboard_data",
-        callback: function(r) {
+        callback: function (r) {
 
             let data = r.message;
 
@@ -106,12 +108,14 @@ function load_dashboard(page) {
 
 // 📊 Chart Renderer
 function render_chart(id, chart_data, title) {
-
     let container = document.getElementById(id);
 
-    container.innerHTML = `<div class="chart-title">${title}</div>`;
+    container.innerHTML = `
+        <div class="chart-title">${title}</div>
+        <div class="chart-body" id="${id}_chart"></div>
+    `;
 
-    new frappe.Chart(container, {
+    new frappe.Chart(`#${id}_chart`, {
         data: chart_data.data,
         type: chart_data.type,
         height: 250

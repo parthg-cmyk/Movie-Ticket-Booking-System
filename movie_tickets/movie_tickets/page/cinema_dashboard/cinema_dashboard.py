@@ -35,7 +35,7 @@ def get_kpis():
         FROM `tabShow` s
         LEFT JOIN `tabTicket Booking` tb 
             ON tb.show = s.name AND tb.docstatus = 1
-        WHERE s.show_date = CURDATE()
+        WHERE s.show_date >= CURDATE()
     """,
             as_dict=True,
         )[0].occupancy
@@ -58,13 +58,22 @@ def get_today_occupancy():
             SUM(tb.number_of_seats) AS booked,
             SUM(s.total_seats) AS total
         FROM `tabShow` s
-        LEFT JOIN `tabTicket Booking` tb 
-            ON tb.show = s.name 
-        WHERE s.show_date = CURDATE()
+       LEFT JOIN `tabTicket Booking` tb 
+    ON tb.show = s.name AND tb.docstatus = 1
+        WHERE s.show_date >= CURDATE()
         GROUP BY s.theater
     """,
         as_dict=True,
     )
+    print(data)
+    if not data:
+        return {
+            "data": {
+                "labels": ["No Data"],
+                "datasets": [{"name": "Occupancy %", "values": [0]}],
+            },
+            "type": "bar",
+        }
 
     return {
         "data": {
@@ -73,7 +82,11 @@ def get_today_occupancy():
                 {
                     "name": "Occupancy %",
                     "values": [
-                        round((d.booked or 0) / d.total * 100, 2) if d.total else 0
+                        (
+                            round((d.booked or 0) / (d.total or 1) * 100, 2)
+                            if d.total
+                            else 0
+                        )
                         for d in data
                     ],
                 }

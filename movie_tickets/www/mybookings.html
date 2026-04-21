@@ -6,151 +6,200 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
-body {
-    font-family: 'Poppins', sans-serif;
-    background: #f5f7fb;
-}
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: #f5f7fb;
+    }
 
-.page-container {
-    max-width: 1000px;
-    margin: auto;
-    padding: 40px;
-}
+    .page-container {
+        max-width: 1000px;
+        margin: auto;
+        padding: 40px;
+    }
 
-/* 🎬 Header */
-.page-title {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 25px;
-}
+    /* 🎬 Header */
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 25px;
+    }
 
-/* 🎟 Booking Card */
-.booking-card {
-    background: #fff;
-    border-radius: 14px;
-    padding: 18px;
-    margin-bottom: 18px;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-    transition: 0.3s;
-}
+    /* 🎟 Booking Card */
+    .booking-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 18px;
+        margin-bottom: 18px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        transition: 0.3s;
+    }
 
-.booking-card:hover {
-    transform: translateY(-4px);
-}
+    .booking-card:hover {
+        transform: translateY(-4px);
+    }
 
-/* 📊 Row Layout */
-.booking-row {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-}
+    /* 📊 Row Layout */
+    .booking-row {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
 
-/* 🎬 Movie */
-.movie-title {
-    font-size: 18px;
-    font-weight: 600;
-}
+    /* 🎬 Movie */
+    .movie-title {
+        font-size: 18px;
+        font-weight: 600;
+    }
 
-/* 📅 Info */
-.meta {
-    font-size: 13px;
-    color: #777;
-    margin-top: 4px;
-}
+    /* 📅 Info */
+    .meta {
+        font-size: 13px;
+        color: #777;
+        margin-top: 4px;
+    }
 
-/* 💰 Amount */
-.amount {
-    font-weight: 600;
-    color: #27ae60;
-}
+    /* 💰 Amount */
+    .amount {
+        font-weight: 600;
+        color: #27ae60;
+    }
 
-/* 🟢 Status Badge */
-.status {
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    color: white;
-    display: inline-block;
-}
+    /* 🟢 Status Badge */
+    .status {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        color: white;
+        display: inline-block;
+    }
 
-.status.Confirmed {
-    background: #27ae60;
-}
+    .status.Confirmed {
+        background: #27ae60;
+    }
 
-.status.Pending {
-    background: #f39c12;
-}
+    .status.Pending {
+        background: #f39c12;
+    }
 
-.status.Cancelled {
-    background: #e74c3c;
-}
+    .status.Cancelled {
+        background: #e74c3c;
+    }
 
-/* 🔗 Link */
-.view-link {
-    margin-top: 10px;
-    display: inline-block;
-    font-size: 13px;
-    color: #ff416c;
-    text-decoration: none;
-}
+    /* 🔗 Link */
+    .view-link {
+        margin-top: 10px;
+        display: inline-block;
+        font-size: 13px;
+        color: #ff416c;
+        text-decoration: none;
+    }
 
-/* ❌ Empty */
-.empty {
-    text-align: center;
-    padding: 60px;
-    color: #888;
-}
+    /* ❌ Empty */
+    .empty {
+        text-align: center;
+        padding: 60px;
+        color: #888;
+    }
+
+    /* Wrapper */
+    #cinema-dashboard-btn {
+        margin-left: 10px;
+    }
+
+    /* Button */
+    .cinema-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        color: #fff !important;
+        font-weight: 600;
+        font-size: 13px;
+        text-decoration: none !important;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        width: 15%;
+    }
+
+    /* Icon */
+    .cinema-btn .icon {
+        font-size: 14px;
+    }
+
+    /* Hover Effect */
+    .cinema-btn:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(135deg, #2575fc, #6a11cb);
+    }
+
+   
 </style>
 
 <div class="page-container">
 
+    {% if user == "Administrator" %}
+    <div style="display: flex; justify-content:right
+    ">
+
+        <!-- <li class="nav-item" id="cinema-dashboard-btn"> -->
+            <a href="/app/cinema-dashboard" class="cinema-btn">
+                <span class="icon">🎬</span>
+                <span class="label">Dashboard</span>
+            </a>
+        <!-- </li> -->
+    </div>
+
+    {% endif %}
     <div class="page-title">🎟 My Bookings</div>
 
     {% if bookings and bookings|length > 0 %}
 
-        {% for b in bookings %}
-        <div class="booking-card">
+    {% for b in bookings %}
+    <div class="booking-card">
 
-            <div class="booking-row">
+        <div class="booking-row">
 
-                <!-- 🎬 Left -->
-                <div>
-                    <div class="movie-title">{{ b.movie_title }}</div>
+            <!-- 🎬 Left -->
+            <div>
+                <div class="movie-title">{{ b.movie_title }}</div>
 
-                    <div class="meta">
-                        📅 {{ b.show_date }} | ⏰ {{ b.start_time }}
-                    </div>
-
-                    <div class="meta">
-                        🎟 Seats: {{ b.seats }}
-                    </div>
+                <div class="meta">
+                    📅 {{ b.show_date }} | ⏰ {{ b.start_time }}
                 </div>
 
-                <!-- 💰 Right -->
-                <div style="text-align:right;">
-                    <div class="amount">₹{{ b.total_amount }}</div>
-
-                    <div class="status {{ b.booking_status }}">
-                        {{ b.booking_status }}
-                    </div>
+                <div class="meta">
+                    🎟 Seats: {{ b.seats }}
                 </div>
-
             </div>
 
-            <!-- 🔗 View -->
-            <a href="/app/ticket-booking/{{ b.name }}" class="view-link">
-                View Details →
-            </a>
+            <!-- 💰 Right -->
+            <div style="text-align:right;">
+                <div class="amount">₹{{ b.total_amount }}</div>
+
+                <div class="status {{ b.booking_status }}">
+                    {{ b.booking_status }}
+                </div>
+            </div>
 
         </div>
-        {% endfor %}
+
+        <!-- 🔗 View -->
+        <a href="/app/ticket-booking/{{ b.name }}" class="view-link">
+            View Details →
+        </a>
+
+    </div>
+    {% endfor %}
 
     {% else %}
 
-        <div class="empty">
-            <h4>No bookings found 🎭</h4>
-            <p>Book your first movie now!</p>
-        </div>
+    <div class="empty">
+        <h4>No bookings found 🎭</h4>
+        <p>Book your first movie now!</p>
+    </div>
 
     {% endif %}
 
